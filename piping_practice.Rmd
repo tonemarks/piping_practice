@@ -1,0 +1,196 @@
+---
+title: "Piping Practice"
+author: "Shannon Ellis"
+date: "9/11/2018"
+output: html_document
+---
+
+The goal of this document is to help get more comfortable tidying data using the functions available in the `dplyr` package.
+
+### `dplyr` functions
+
+Before we get started, let's review the main `dplyr` functions you'll need to use throughout this lesson:
+
+* glimpse() - get an overview of what’s included in dataset
+* filter() - filter rows
+* select() - select, rename, and reorder columns
+* arrange() - reorder rows
+* mutate() - create a new column
+* group_by() - group variables
+* summarize() - summarize information within a dataset
+* left_join() - combining data across data frame
+
+### pipe review
+
+Also, we want to take a minute to highlight how you tie all these functions together: the pipe operator: `%>%`. This operator takes whatever the *output* of the function before it and uses that as the *input* for the next function..
+
+#### A good pipe 
+
+Here, we'll use something that *looks* like code but isn't actually coe as an example:
+
+```
+shoe %>% 
+  put_on() %>%
+  tie_it()
+```
+
+Here, I'm saying, start with a shoe *then* (`%>%`) put it on your foot using hte `put_on` function. Then, take that shoe that's now on your foot (the output from shoe %>% `put_on()`) and tie it (`tie_it()`).
+
+#### A broken pipe 
+
+Using this same example, what if I instead said:
+
+```
+shoe %>%
+  put_on()
+tie_it()
+```
+
+Here, we've removed the pipe between `put_on()` and `tie_it()`.
+
+Well, this says, put the shoe on *then* tie that shoe (because there's a pipe there)
+
+*But* the `tie_it()` line doesn't have an input. The `tie_it` function doesn't know what to tie...
+
+#### Two separate pipes
+
+Okay, one final toy example. What if we said...
+
+```
+shoe %>%
+  put_on()
+
+shoe %>%
+  tie_it()
+```
+
+Well, here, the first two lines says take the shoe and put it on. But the next line says take the shoe (that's not on the foot yet) and tie it.
+
+This would get you a shoe on a foot *and* a shoe that was not on a foot but that was tied. Not exactly what we were looking for.
+
+#### Back to the good pipe 
+
+In order to get a shoe, on a foot, that is tied, you need a pipe to take the output from the step prior and "pipe it" into the next function:
+
+```
+shoe %>%
+  put_on() %>%
+  tie_it()
+```
+
+Now that we've reviewed the functions in `dplyr` *and* what a pipe is, let's get down to writing some code!
+
+### The Datasets
+
+In these exercies we'll be using two datasets: `mtcars` and `msleep`.
+
+`msleep` is available from the `ggplot2` package. 
+
+
+```{r load-package}
+## Install and load the ggplot2 package
+install.packages("ggplot2")
+install.packages("dplyr")
+library(ggplot2)
+library(dplyr)
+```
+
+
+## Looking at the Datasets
+
+Let's get an idea of what variables are available in each dataset. Use the functions `glimpse()` and `View()` to get a sense of both the `mtcars` and the `msleep` dataset. 
+
+**Think about the differences between the `glimpse()` and `View()` functions**
+
+```{r view-data}
+## Get acquainted with the dataset
+glimpse(mtcars)
+glimpse(msleep)
+View(mtcars)
+View(msleep)
+```
+
+## Filtering Rows
+
+Now that you have some idea of what variables and how many observations are included in each dataset, we'll get down to using more `dplyr` functions!
+
+Sometimes you have a dataset but are only interested in working with some *part* of the dataset. To do this, you want to filter the full dataset to only include the rows you're interested in. 
+
+For example, the `msleep` dataset includes data about lots of different mammals. what if you only were interested in studying carnivores?
+
+```{r filtering-rows-msleep}
+## Filter the `msleep` dataset to only include carnivorous animals
+## call this new dataframe `carnivores`
+carnivores <- filter(msleep, order == "carnivora")
+```
+
+```{r observations-carnivores}
+## How many observations are in this new `carnivores` dataframe?
+0
+```
+
+
+Or, what about in the `mtcars` dataset. What if you weren't interested in working with any 4-cylinder cars? 
+
+```{r filtering-rows-mtcars}
+## Filter the `mtcars` dataset to remove all 4 cylinder cars
+## call this new dataframe `big_cars`
+big_cars <- filter(mtcars, cyl == "4")
+```
+
+```{r observations-big-cars}
+## How many observations are in this new `big_cars` dataframe?
+11
+```
+
+## Reordering rows
+
+You should now have two filtered datasets: `carnivores` and `big_cars`. 
+
+In addition to filtering out rows, you often want your data in a different order than they are currently.
+
+For the `carnivores` dataframe, it's reasonable that if you're interested in how long each animal sleeps, you'd want to sort the rows by this variable (`msleep`). 
+
+```{r reordering-rows-carnivores}
+## Reorder the rows of the `carnivores` dataset 
+## Have the shortest sleepers first and the longest sleepers last
+## again assign this dataframe to the variable `carnivores`
+carnivores <- arrange(carnivores, sleep_total)
+```
+
+Let's do something similar with our new `big_cars` dataframe.
+
+Here we want to order our rows by how heavy the cars are.
+
+```{r reordering-rows-big-cars}
+## Reorder the rows of the `big_cars` dataset 
+## Have the largest cars first and the smallest cars last
+## again assign this dataframe to the variable `big_cars`
+big_cars <- arrange(big_cars, wt)
+```
+
+### Piping
+
+So far we've filtered our original datasets (`mtcars` and `msleep`) and re-ordered the rows. We've done that in two different steps. However, this can all be done at once, using pipes.
+
+Recreate the `carnivores` dataframe you created above (filtering and re-ordering), but do it all at once using pipes
+
+```{r pipe-carnivores}
+## Recreate the `carnivores` object
+## Do it all at once
+## using pipes
+msleep %>%
+  filter(order == "carnivora") %>%
+  arrange(carnivores, sleep_total)
+```
+
+Now, recreate the `big_cars` dataframe you created above (filtering and re-ordering), but do it all at once using pipes
+
+```{r pipe-big-cars}
+## Recreate the `big_cars` object
+## Do it all at once
+## using pipes
+mtcars %>%
+  filter(cyl == "4") %>%
+  arrange(wt)
+```
